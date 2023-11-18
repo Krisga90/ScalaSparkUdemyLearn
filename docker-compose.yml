@@ -3,7 +3,7 @@ version: '3.9'
 services:
   postgres:
     image: postgres:latest
-    container_name: postgres
+    container_name: postgresa
     environment:
       - "TZ=Europe/Amsterdam"
       - "POSTGRES_USER=docker"
