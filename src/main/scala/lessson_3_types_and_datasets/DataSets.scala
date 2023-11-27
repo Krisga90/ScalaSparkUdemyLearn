@@ -1,5 +1,6 @@
 package lessson_3_types_and_datasets
 
+import org.apache.spark.sql.functions.array_contains
 import org.apache.spark.sql.{Dataset, Encoder, Encoders, SparkSession}
 
 import java.sql.Date
@@ -57,5 +58,36 @@ object DataSets extends App{
 
   val carNamesDS = carsDS.map(car => car.Name.toUpperCase())
   carNamesDS.show()
+
+  // Joins
+
+  case class Guitar(id: Long, model:String,  make: String, guitarType: String)
+  case class GuitarPlayer(id: Long, name: String, guitars: Seq[Long], band: Long )
+  case class Band(id: Long, name: String, hometown: String, year: Long )
+
+  val guitarsDS = readDF("guitars.json").as[Guitar]
+  val guitarPlayersDS = readDF("guitarPlayers.json").as[GuitarPlayer]
+  val bandsDS = readDF("bands.json").as[Band]
+
+  val guitarPlayerBandsDS: Dataset[(GuitarPlayer, Band)] = guitarPlayersDS
+    .joinWith(bandsDS, guitarPlayersDS.col("band") === bandsDS.col("id"), "inner")
+
+  guitarPlayerBandsDS.show()
+
+  /**
+   * Exercise: Join the guitarsDS and guitarPlayersDS, in an outer join
+   * hint use array_contains
+   */
+
+  guitarPlayersDS
+    .joinWith(
+      guitarsDS,
+      array_contains(guitarPlayersDS.col("guitars"),guitarsDS.col("id"))
+      , "outer").show()
+
+  // grouping
+
+  carsDS.groupByKey(_.Origin).count().show()
+  // joins and groups are WIDE transformations, will involve SHUFFLE operations
 
 }
